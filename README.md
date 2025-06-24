@@ -22,7 +22,7 @@ You need the following:
 ### 1. Clone the Repository
 
 bash
-git clone https://github.com/YOUR_USERNAME/RiadX-OS.git
+git clone [https://github.com/riad1239999/RiadX-OS.git]
 cd RiadX-OS
  
 ## 2. Install Required Tools
