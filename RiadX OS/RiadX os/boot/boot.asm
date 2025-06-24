@@ -1,18 +1,18 @@
-; boot.asm - Boot sector assembly code for RiadX OS
+; boot.asm - Boot sector assembly code for RiadX OS (with improvements)
 ; This is the first code that runs when the system boots
 
 [BITS 16]                       ; 16-bit real mode
-[ORG 0x7C00]                   ; Boot sector loads at 0x7C00
+[ORG 0x7C00]                    ; Boot sector loads at 0x7C00
 
 ; Boot sector entry point
 start:
     cli                         ; Disable interrupts
-    xor ax, ax                 ; Clear AX register
-    mov ds, ax                 ; Set data segment
-    mov es, ax                 ; Set extra segment
-    mov ss, ax                 ; Set stack segment
-    mov sp, 0x7C00             ; Set stack pointer just below boot sector
-    sti                        ; Enable interrupts
+    xor ax, ax                  ; Clear AX register
+    mov ds, ax                  ; Set data segment
+    mov es, ax                  ; Set extra segment
+    mov ss, ax                  ; Set stack segment
+    mov sp, 0x7C00              ; Set stack pointer just below boot sector
+    sti                         ; Enable interrupts
 
     ; Display boot message
     mov si, boot_msg
@@ -58,10 +58,18 @@ load_stage2:
     cmp ax, 0x5A4D             ; Check for valid signature
     jne load_error
 
-    ; Jump to second stage
-    mov si, jumping_msg
+    ; Enable A20 line before protected mode
+    call enable_a20
+
+    ; Display protected mode message
+    mov si, protected_msg
     call print_string
-    jmp 0x1000:0x0000          ; Jump to loaded code
+
+    ; Switch to protected mode
+    call enter_protected_mode
+
+    ; If we return, something went wrong
+    jmp halt
 
 disk_error:
     mov si, disk_error_msg
@@ -81,14 +89,12 @@ print_string:
     mov ah, 0x0E               ; BIOS teletype function
     mov bh, 0x00               ; Page number
     mov bl, 0x07               ; Text attribute (light gray on black)
-
 .next_char:
     lodsb                      ; Load byte from [SI] into AL, increment SI
     cmp al, 0                  ; Check for null terminator
     je .done
     int 0x10                   ; Call BIOS video interrupt
     jmp .next_char
-
 .done:
     pop bx
     pop ax
@@ -179,23 +185,23 @@ detect_memory:
     mov di, memory_map         ; Destination buffer
     xor ebx, ebx              ; Clear continuation value
     mov edx, 0x534D4150       ; "SMAP" signature
-    
+
 .loop:
     mov eax, 0xE820           ; Function code
     mov ecx, 24               ; Buffer size
     int 0x15                  ; Call BIOS
     jc .error                 ; Jump if error
-    
+
     cmp eax, 0x534D4150       ; Verify signature
     jne .error
-    
+
     ; Store entry
     add di, 24                ; Move to next entry
     inc word [memory_map_count]
-    
+
     test ebx, ebx             ; Check if more entries
     jnz .loop                 ; Continue if more entries
-    
+
     clc                       ; Clear carry (success)
     jmp .done
 
@@ -270,6 +276,7 @@ gdt_descriptor:
 ; Data section
 boot_msg        db 'RiadX OS Bootloader v1.0', 0x0D, 0x0A, 0
 loading_msg     db 'Loading kernel...', 0x0D, 0x0A, 0
+protected_msg   db 'Enabling A20 and entering protected mode...', 0x0D, 0x0A, 0
 jumping_msg     db 'Jumping to kernel...', 0x0D, 0x0A, 0
 error_msg       db 'Boot failed!', 0x0D, 0x0A, 0
 disk_error_msg  db 'Disk read error!', 0x0D, 0x0A, 0
@@ -300,7 +307,6 @@ print_string_32:
     push ebx
     mov ebx, 0xB8000          ; Video memory address
     mov ah, 0x07              ; Attribute (light gray on black)
-
 .loop:
     lodsb
     cmp al, 0
