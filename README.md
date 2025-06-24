@@ -1,4 +1,26 @@
-Hello
-This OS is made by me, riad achour
-this os is a 16 bit and 32 bit
-the boot.asm transitions from 16 bit real mode to 32 bit protected mode
+# 🖥️ RiadX-OS (32-bit)
+
+**RiadX-OS** is a 32-bit operating system made by Riad, released as source code only.  
+This guide will help you build it from the source and install it on a USB stick using free tools.
+
+---
+
+## ⚙️ Requirements
+
+You need the following:
+
+- A **Linux system** (or [WSL](https://learn.microsoft.com/en-us/windows/wsl/) on Windows)
+- `make`, `nasm`, `xorriso`, `grub-pc-bin`, `mtools`
+- A **USB flash drive** (at least 512MB)
+- [**Rufus**](https://rufus.ie/) (for flashing the ISO)
+- Optional: **QEMU** or **Bochs** for testing without USB
+
+---
+
+## 🔧 How to Build RiadX-OS
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/YOUR_USERNAME/RiadX-OS.git
+cd RiadX-OS
