@@ -1,6 +1,6 @@
 # 🖥️ RiadX-OS (32-bit)
 
-**RiadX-OS** is a 32-bit operating system made by Riad, released as source code only.  
+**RiadX-OS** is a 32-bit operating system made by Riad Achour, released as source code only.  
 This guide will help you build it from the source and install it on a USB stick using free tools.
 
 ---
@@ -24,3 +24,13 @@ You need the following:
 ```bash
 git clone https://github.com/YOUR_USERNAME/RiadX-OS.git
 cd RiadX-OS
+##
+
+
+## 2. Install Required Tools
+On Ubuntu/Debian:
+bash
+Copy
+Edit
+sudo apt update
+sudo apt install build-essential nasm xorriso grub-pc-bin mtools
